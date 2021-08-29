@@ -40,8 +40,8 @@ void GPSParser::parse_lat_long() {
     char lat_deg[2];
     char lat_min[8];
 
-    char long_deg[4] = {'\0', '\0', '\0', '\0'};
-    char long_min[8] = {'\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0'};
+    char long_deg[4];
+    char long_min[8];
 
     char *lat_str;
     char *long_str;
