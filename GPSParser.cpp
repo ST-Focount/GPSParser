@@ -15,23 +15,26 @@ void GPSParser::send_command(const char *cmd) {
 }
 
 void GPSParser::parse_lat_long() {
-    uint8_t size = 0;
+    uint16_t size = 0;
     uint8_t counter = 0;
     uint8_t coord_index = 0;
 
-    char full_line[] = "$GPGLL,4044.2413,N,03020.1276,E,102218.22";
+    char full_line[100];
 
-    bool debug = true;
+    bool debug = false;
 
     if (!debug) {
         while (_serial->available()) {
             char c = _serial->read();
+
             if (c != '\n') {
                 full_line[size] = c;
                 size++;
             }
         }
     }
+
+    //Serial.println(full_line);
 
     if (strstr(full_line, "$GPGLL") == NULL || strlen(full_line) < 8) {
         return;
@@ -76,6 +79,10 @@ void GPSParser::parse_lat_long() {
                     }
 
                     coord_index++;
+
+                    if (coord_index == 10) {
+                        break;
+                    }
                 }
             }
         }
