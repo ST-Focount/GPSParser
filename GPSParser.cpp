@@ -19,7 +19,7 @@ void GPSParser::parse_lat_long() {
     uint8_t counter = 0;
     uint8_t coord_index = 0;
 
-    char full_line[50];
+    char full_line[] = "$GPGLL,4044.2413,N,03020.1276,E,102218.22";
 
     bool debug = true;
 
@@ -37,8 +37,8 @@ void GPSParser::parse_lat_long() {
         return;
     }
 
-    char lat_deg[2] = {'\0', '\0'};
-    char lat_min[8] = {'\0', '\0', '\0', '\0', '\0', '\0', '\0'};
+    char lat_deg[2];
+    char lat_min[8];
 
     char long_deg[4] = {'\0', '\0', '\0', '\0'};
     char long_min[8] = {'\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0'};
@@ -81,33 +81,15 @@ void GPSParser::parse_lat_long() {
         }
     }
 
-    float _long_min = strtod(long_min, NULL);
-    float _lat_min = strtod(lat_min, NULL);
-    float _lat_deg = strtod(lat_deg, NULL);
+    float _long_min = atof(long_min);
+    float _lat_min = atof(lat_min);
+
+    int _lat_deg = atoi(lat_deg) / 10;
+    int _long_deg = atoi(long_deg) / 10;
 
     _lat_min = _lat_min / 60;
     _long_min = _long_min / 60;
 
-    snprintf(lat_min, sizeof lat_min, "%f", _lat_min);
-    snprintf(long_min, sizeof long_min, "%f", _long_min);
-
-    lat_str = (char *)malloc((sizeof lat_deg) + (sizeof lat_min) + 4);
-
-    for (int i = 0; i < strlen(lat_deg); i++) {
-        lat_str[i] = lat_deg[i];
-    }
-
-    for (int i = 2; i < strlen(lat_min) + 1; i++) {
-        lat_str[i] = lat_min[i - 1];
-    }
-
-    long_str = (char *)malloc((sizeof long_deg) + (sizeof long_min) + 4);
-
-    for (int i = 1; i < strlen(long_deg); i++) {
-        long_str[i - 1] = long_deg[i];
-    }
-
-    for (int i = 2; i < strlen(long_min) + 1; i++) {
-        long_str[i] = long_min[i - 1];
-    }
+    latitude = String(_lat_deg) + String(_lat_min, 4);
+    longitude = String(_long_deg) + String(_long_min, 4);
 }

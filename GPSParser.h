@@ -10,11 +10,11 @@
 class GPSParser {
     SoftwareSerial *_serial;
 
-    long latitude = 0;
-    long longitude = 0;
-
     public:
         GPSParser(SoftwareSerial *serial);
+
+        String latitude = "";
+        String longitude = "";
 
     void init(int baud);
     void parse_lat_long();
