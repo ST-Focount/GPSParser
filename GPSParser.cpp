@@ -4,7 +4,7 @@ GPSParser::GPSParser(SoftwareSerial *serial) {
     _serial = serial;
 }
 
-void GPSParser::init(int baud) {
+void GPSParser::init(long baud) {
     _serial->begin(baud);
     send_command(PMTK_SET_NMEA_UPDATE_1HZ);
     send_command(PMTK_SET_NMEA_OUTPUT_GLLONLY);
@@ -13,6 +13,9 @@ void GPSParser::init(int baud) {
 void GPSParser::send_command(const char *cmd) {
     _serial->println(cmd);
 }
+
+String realLat = "";
+String realLong= "";
 
 void GPSParser::parse_lat_long() {
     uint16_t size = 0;
@@ -27,27 +30,25 @@ void GPSParser::parse_lat_long() {
         while (_serial->available()) {
             char c = _serial->read();
 
-            if (c != '\n') {
+            if (c != '\n' && size <= 100) {
                 full_line[size] = c;
                 size++;
+            } else {
+                break;
             }
         }
     }
 
     //Serial.println(full_line);
 
-    if (strstr(full_line, "$GPGLL") == NULL || strlen(full_line) < 8) {
+    if (strstr(full_line, "$GPGLL") == NULL || strstr(full_line, "$PMTK") != NULL || strlen(full_line) < 8) {
         return;
     }
 
     char lat_deg[2];
     char lat_min[8];
-
     char long_deg[4];
     char long_min[8];
-
-    char *lat_str;
-    char *long_str;
 
     bool gpgll_checker = false;
 
@@ -91,12 +92,43 @@ void GPSParser::parse_lat_long() {
     float _long_min = atof(long_min);
     float _lat_min = atof(lat_min);
 
-    int _lat_deg = atoi(lat_deg) / 10;
-    int _long_deg = atoi(long_deg) / 10;
+    int _lat_deg = atoi(lat_deg);
+    int _long_deg = atoi(long_deg);
 
     _lat_min = _lat_min / 60;
     _long_min = _long_min / 60;
 
-    latitude = String(_lat_deg) + String(_lat_min, 4);
-    longitude = String(_long_deg) + String(_long_min, 4);
+    String result1 = String(_lat_deg);
+
+    char latmin[8];
+
+    dtostrf(_lat_min,8, 6, latmin);
+
+    for (int i = 1; i < 8; i++) {
+        result1 += latmin[i];
+    }
+
+    if (!result1.equals("0.000000")) {
+        latitude = result1;
+        realLat = result1;
+    } else {
+        latitude = realLat;
+    }
+
+    String result2 = String(_long_deg);
+
+    char longmin[8];
+
+    dtostrf(_long_min,8, 6, longmin);
+
+    for (int i = 1; i < 8; i++) {
+        result2 += longmin[i];
+    }
+
+    if (!result2.equals("0.000000")) {
+        longitude = result2;
+        realLong = result2;
+    } else {
+        longitude = realLong;
+    }
 }
